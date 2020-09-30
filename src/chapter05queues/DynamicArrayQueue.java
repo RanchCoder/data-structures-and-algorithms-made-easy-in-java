@@ -33,6 +33,8 @@ public class DynamicArrayQueue{
 	// Initializes the queue to use an array of given length.
 	public DynamicArrayQueue (int cap){
 		queueRep = new int [ cap];
+		//Resetting the CAPACITY to current user provided cap value.
+		CAPACITY = cap; 
 		size  = 0; front = 0; rear  = 0;
 	}
 	
@@ -80,13 +82,45 @@ public class DynamicArrayQueue{
 		int length = size();
 		int[] newQueue = new int[length<<1];  // or 2* length
 
-		//copy items
-		for(int i = front; i <= rear; i ++)
-			newQueue[i-front] = queueRep[i%CAPACITY];
+		//This loop wont work for circular case when our rear will be pointing to the same location as that of front , i.e 
+		// queue[5] = {1,2,3,4,5} , now our rear will be at (rear + 1) % CAPACITY
+		// i.e 0 and loop condition will run only once.
+// 		for(int i = front; i <= rear; i ++)
+// 			newQueue[i-front] = queueRep[i%CAPACITY];
+		
+		// if front and  rear pointer are pointing at the exact same location i.e 0 , when only enqueue is done and not dequeue uptil capacity
+        if(rear == 0){ 
+            for(int i = 0 ; i < queueRep.length ; i++){
+                newQueue[i] = queueRep[i];
+            }          
+        }
+        
+       // if front and  rear pointer are pointing at the exact same location but not at 0 , i.e dequeue() is also performed in between.		
+        else{
+            
+            int j = 0, temp = front;
+            //System.out.println("temp value : " + temp + " and rear " + rear);
+                
+            //we go only till one element before rear pointer , because there might be a issue of rear and front both pointer pointing at same location other than 0
+            while(temp != rear - 1){
+                newQueue[j] = queueRep[temp%CAPACITY];
+                j++;
+                temp = (temp+1) % CAPACITY;
+                
+            }
+            
+            newQueue[j] = queueRep[temp];
+            
+        }
+        
 
 		queueRep = newQueue;
 		front = 0;
-		rear = size-1;
+		//if we go uptil size - 1 then we will be pointing the latest element entered in our queue and not the latest free slot to enter 
+		// the value
+		//rear = size-1;
+		//as size is incremented each time on enqueue and decremented each time at dequeue
+		rear = size;
 		CAPACITY *= 2;
 	}
 	
